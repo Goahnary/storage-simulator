@@ -1,43 +1,54 @@
 #include<pthread.h>
 #include<stdio.h>
 
-FILE disk = fopen("storage","r+");
 int sizeOfBlock = 2000;
 int numberOfBlocks = 512;
 int freeBlocks = 512;
-bool[512] bitmap = {false};
-char[512][3][] directory;
-int directory
+int bitmap[512] = {0};
+char directoryNames[512][255];
+int directoryStarts[512];
+int directorySizes[512];
+int directoryEntries = 0;
 
 int main(int argc, char *argv[]){
 	
 }
 
-void open(char[] fileName){
+void open(char fileName[]){
 
 }
 
-void create(int size){
+void create(int size, char name[]){
 	int freeBlocks = 0;
 	int startIndex = -1;
+	int created = 0;
+	int i;
 
 	//check every block
-	for(int i = 0; i < bitmap.length; i++){
+	for(i = 0; i < sizeof(bitmap) / sizeof(bitmap[0]); i++){
 		
 		//if this block is free
-		if(!bitmap[i]){
+		if(bitmap[i] == 0){
 			//start counting free blocks
 			startIndex = i;
 			freeBlocks++;
 
 			//if this set of free blocks is big enough
 			if(freeBlocks == size){
+				int j;
+
 				//allocate these blocks
-				for(int j = startBlock; j <= i; j++){
-					bitmap[j] = true;
+				for(j = startIndex; j <= i; j++){
+					bitmap[j] = 1;
 				}
 
-				
+				directoryNames[directoryEntries] = name;
+				directoryStarts[directoryEntries] = startIndex;
+				directorySizes[directoryEntries] = size;
+				directoryEntries++;
+			
+				created = 1;
+				freeBlocks -= size;
 			}
 		}
 		
@@ -45,5 +56,11 @@ void create(int size){
 			startIndex = -1;
 			freeBlocks = 0;
 		}
+	}
+
+	if(created == 1){
+		printf("%s", "File Created!\n");
+	} else {
+		printf("%s", "There is not enough free space to create this file.");
 	}
 }
