@@ -1,6 +1,7 @@
 #include <pthread.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 //volume control block
 struct VCB{
@@ -33,14 +34,18 @@ struct POFT {
 	int handles[511];
 };
 
-struct VCB myVCB;
-myVCB.sizeOfBlock = 2048;
-myVCB.freeBlocks = 511;
-myVCB.numberOfBlocks = 511;
-myVCB.bitmap = {0};
+struct VCB myVCB = {
+	.sizeOfBlock = 2048,
+	.freeBlocks = 511,
+	.numberOfBlocks = 511,
+	.bitmap = {0}
+};
 
-struct directory myDirectory;
-myDirectory.entries = 0;
+struct directory myDirectory = {
+	.entries = 0
+};
+
+struct OFT myOFT;
 
 void open(char fileName[]){
 
@@ -64,13 +69,13 @@ void create(int size, char *name){
 	for(i = 0; i < sizeof(myVCB.bitmap) / sizeof(myVCB.bitmap[0]); i++){
 		
 		//if this block is free
-		if(bitmap[i] == 0){
+		if(myVCB.bitmap[i] == 0){
 			//start counting free blocks
 			startIndex = i;
 			free++;
 
 			//if this set of free blocks is big enough
-			if(freeBlocks == size){
+			if(free == size){
 				int j;
 
 				//allocate these blocks
@@ -78,9 +83,9 @@ void create(int size, char *name){
 					myVCB.bitmap[j] = 1;
 				}
 
-				myDirectory.names[directoryEntries] = name;
-				myDirectory.startBlocks[directoryEntries] = startIndex;
-				myDirectory.sizes[directoryEntries] = size;
+				myDirectory.names[myDirectory.entries] = name;
+				myDirectory.startBlocks[myDirectory.entries] = startIndex;
+				myDirectory.sizes[myDirectory.entries] = size;
 				myDirectory.entries++;
 			
 				created = 1;
