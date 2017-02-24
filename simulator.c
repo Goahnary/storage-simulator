@@ -1,12 +1,13 @@
-#include<pthread.h>
-#include<stdio.h>
+#include <pthread.h>
+#include <string.h>
+#include <stdio.h>
 
 //volume control block
 struct VCB{
-	int sizeOfBlock = 2048;
-	int numberOfBlocks = 512;
-	int freeBlocks = 512;
-	int bitmap[511] = {0};
+	int sizeOfBlock;
+	int numberOfBlocks;
+	int freeBlocks;
+	int bitmap[511];
 };
 
 //directory
@@ -14,23 +15,32 @@ struct directory {
 	char *names[511];
 	int startBlocks[511];
 	int sizes[511];
-	int entries = 0;
-}
+	int entries;
+};
 
 struct FCB {
+	char name[255];
 	int size;
 	int firstBlock;
-}
+};
 
 struct OFT {
-	char name[255];
-	int firstBlock;
-}
+	struct FCB blocks[511];
+};
 
 struct POFT {
-	char name[];
-	int handle;
-}
+	struct FCB blocks[511];
+	int handles[511];
+};
+
+struct VCB myVCB;
+myVCB.sizeOfBlock = 2048;
+myVCB.freeBlocks = 511;
+myVCB.numberOfBlocks = 511;
+myVCB.bitmap = {0};
+
+struct directory myDirectory;
+myDirectory.entries = 0;
 
 void open(char fileName[]){
 
@@ -51,7 +61,7 @@ void create(int size, char *name){
 	int i;
 
 	//check every block
-	for(i = 0; i < sizeof(VCB.bitmap) / sizeof(VCB.bitmap[0]); i++){
+	for(i = 0; i < sizeof(myVCB.bitmap) / sizeof(myVCB.bitmap[0]); i++){
 		
 		//if this block is free
 		if(bitmap[i] == 0){
@@ -65,13 +75,13 @@ void create(int size, char *name){
 
 				//allocate these blocks
 				for(j = startIndex; j <= i; j++){
-					VCB.bitmap[j] = 1;
+					myVCB.bitmap[j] = 1;
 				}
 
-				directory.names[directoryEntries] = name;
-				directory.startBlocks[directoryEntries] = startIndex;
-				directory.sizes[directoryEntries] = size;
-				directory.entries++;
+				myDirectory.names[directoryEntries] = name;
+				myDirectory.startBlocks[directoryEntries] = startIndex;
+				myDirectory.sizes[directoryEntries] = size;
+				myDirectory.entries++;
 			
 				created = 1;
 				free -= size;
@@ -92,5 +102,6 @@ void create(int size, char *name){
 }
 
 int main(int argc, char *argv[]){
+
 	create(3,"file1");
 }
