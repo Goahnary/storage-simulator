@@ -1,24 +1,32 @@
 #include<pthread.h>
 #include<stdio.h>
 
-int sizeOfBlock = 2000;
+//volume control block
+int sizeOfBlock = 2048;
 int numberOfBlocks = 512;
 int freeBlocks = 512;
-int bitmap[512] = {0};
-char directoryNames[512][255];
-int directoryStarts[512];
-int directorySizes[512];
-int directoryEntries = 0;
+int bitmap[511] = {0};
 
-int main(int argc, char *argv[]){
-	
-}
+
+//directory
+char *directoryNames[511];
+int directoryStarts[511];
+int directorySizes[511];
+int directoryEntries = 0;
 
 void open(char fileName[]){
 
 }
 
-void create(int size, char name[]){
+void close(){
+
+}
+
+void write(){
+
+}
+
+void create(int size, char *name){
 	int freeBlocks = 0;
 	int startIndex = -1;
 	int created = 0;
@@ -63,4 +71,8 @@ void create(int size, char name[]){
 	} else {
 		printf("%s", "There is not enough free space to create this file.");
 	}
+}
+
+int main(int argc, char *argv[]){
+	create(3,"file1");
 }
