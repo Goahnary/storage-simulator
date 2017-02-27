@@ -29,6 +29,7 @@ struct FCB {
 //Open File Table
 struct OFT {
 	struct FCB blocks[511];
+	
 };
 
 //Per-process Open File Table
@@ -37,7 +38,11 @@ struct POFT {
 	int handles[511];
 };
 
-
+//defining a tuple to help keeping track of files in the OFT
+struct oftTuple {
+	char fname[255];
+	typedef struct FCB[];
+};
 
 
 //Creating the volume conrol block for our file system(FS)
@@ -47,7 +52,6 @@ struct VCB myVCB = {
 	.numberOfBlocks = 511,
 	.bitmap = {0}
 };
-
 
 //creating directory for our FS
 struct directory myDirectory = {
@@ -78,11 +82,9 @@ void create(int size, char *name){
 	int free = 0;
 	int startIndex = -1;
 	int created = 0;
-	int i;
 
 	//check every block
-	for(i = 0; i < sizeof(myVCB.bitmap) / sizeof(myVCB.bitmap[0]); i++){
-		
+	for(int i = 0; i < sizeof(myVCB.bitmap) / sizeof(myVCB.bitmap[0]); i++){
 		//if this block is free
 		if(myVCB.bitmap[i] == 0){
 			//start counting free blocks
@@ -119,6 +121,23 @@ void create(int size, char *name){
 	} else {
 		printf("%s", "There is not enough free space to create this file.");
 	}
+}
+
+//List files in FS
+//	This method will check the open file table (OFT) 
+//	and use it to print all the names of files in the 
+//	directory
+void dir(){
+	
+}
+
+
+//Method to check if there is enough free space
+//	returns:
+//		true if there is space
+//		false if there is not enough space
+int isFreeSpace(int blocksNeeded){
+	
 }
 
 int main(int argc, char *argv[]){
