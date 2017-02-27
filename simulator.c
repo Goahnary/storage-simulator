@@ -19,21 +19,28 @@ struct directory {
 	int entries;
 };
 
+//File Control Block
 struct FCB {
 	char name[255];
 	int size;
 	int firstBlock;
 };
 
+//Open File Table
 struct OFT {
 	struct FCB blocks[511];
 };
 
+//Per-process Open File Table
 struct POFT {
 	struct FCB blocks[511];
 	int handles[511];
 };
 
+
+
+
+//Creating the volume conrol block for our file system(FS)
 struct VCB myVCB = {
 	.sizeOfBlock = 2048,
 	.freeBlocks = 511,
@@ -41,24 +48,32 @@ struct VCB myVCB = {
 	.bitmap = {0}
 };
 
+
+//creating directory for our FS
 struct directory myDirectory = {
 	.entries = 0
 };
 
+//Creating the Open File Table for our FS
 struct OFT myOFT;
 
+
+//Opens files for reading
 void open(char fileName[]){
 
 }
 
+//Closes Files
 void close(){
 
 }
 
+//Writes to files
 void write(){
 
 }
 
+//Creates files
 void create(int size, char *name){
 	int free = 0;
 	int startIndex = -1;
