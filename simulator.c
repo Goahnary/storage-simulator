@@ -21,21 +21,8 @@ struct directory {
 
 //File Control Block
 struct FCB {
-	char name[255];
 	int size;
 	int firstBlock;
-};
-
-//Open File Table
-struct OFT {
-	struct FCB blocks[511];
-	
-};
-
-//Per-process Open File Table
-struct POFT {
-	struct FCB blocks[511];
-	int handles[511];
 };
 
 //defining a tuple to help keeping track of files in the OFT
@@ -44,6 +31,17 @@ struct oftTuple {
 	struct FCB fcb;
 };
 
+//Open File Table
+struct OFT {
+	struct oftTuple blocks[511];
+	int entries;
+};
+
+//Per-process Open File Table
+struct POFT {
+	struct FCB blocks[511];
+	int handles[511];
+};
 
 //Creating the volume conrol block for our file system(FS)
 struct VCB myVCB = {
@@ -59,12 +57,34 @@ struct directory myDirectory = {
 };
 
 //Creating the Open File Table for our FS
-struct OFT myOFT;
+struct OFT myOFT = {
+	.entries = 0
+};
 
 
 //Opens files for reading
-void open(char fileName[]){
+void open(char *fileName){
+	int i;
 
+	//seach the directory for the file
+	for(i = 0; i < myDirectory.entries; i++){
+		if(strcmp(myDirectory.names[i], fileName) != 0){
+			break;
+		}
+	}
+
+	struct FCB newFCB = {
+		.size = myDirectory.sizes[i],
+		.firstBlock = myDirectory.startBlocks[i]
+	};
+
+	struct oftTuple tuple = {
+		.fcb = newFCB,
+		.fname = fileName
+	};
+
+	myOFT.blocks[myOFT.entries] = tuple;
+	myOFT.entries++;
 }
 
 //Closes Files
@@ -82,9 +102,9 @@ void create(int size, char *name){
 	int free = 0;
 	int startIndex = -1;
 	int created = 0;
-
+	int i;
 	//check every block
-	for(int i = 0; i < sizeof(myVCB.bitmap) / sizeof(myVCB.bitmap[0]); i++){
+	for(i = 0; i < sizeof(myVCB.bitmap) / sizeof(myVCB.bitmap[0]); i++){
 		//if this block is free
 		if(myVCB.bitmap[i] == 0){
 			//start counting free blocks
