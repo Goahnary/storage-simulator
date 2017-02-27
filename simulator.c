@@ -61,6 +61,7 @@ struct OFT myOFT = {
 	.entries = 0
 };
 
+char blockContent[511][2000];
 
 //Opens files for reading
 void open(char *fileName){
@@ -68,7 +69,7 @@ void open(char *fileName){
 
 	//seach the directory for the file
 	for(i = 0; i < myDirectory.entries; i++){
-		if(strcmp(myDirectory.names[i], fileName) != 0){
+		if(strcmp(myDirectory.names[i], fileName) == 0){
 			break;
 		}
 	}
@@ -88,12 +89,48 @@ void open(char *fileName){
 }
 
 //Closes Files
-void close(){
+void close(char *fileName){
+	int i;
+
+	//search all entries of myOFT
+	for(i = 0; i < myOFT.entries; i++){
+
+		//if the file names match, remove from myOFT
+		if(strcmp(myOFT.blocks[i].fname, fileName) == 0){
+			struct oftTuple t;
+			myOFT.blocks[i] = t;
+			myOFT.entries--;
+			break;
+		}
+	}
+
 
 }
 
 //Writes to files
-void write(){
+void write(char *fileName, char* content){
+	int i;
+
+	//search myOFT to find index of filename
+	for(i = 0; i < myOFT.entries; i++){
+		if(strcmp(myOFT.blocks[i].fname, fileName) == 0){
+			break;
+		}
+	}
+
+	int size = myOFT.blocks[i].fcb.size;
+	int firstBlock = myOFT.blocks[i].fcb.firstBlock;
+	int currentBlock = myOFT.blocks[i].fcb.firstBlock;
+
+	//while the string is not null, write 2000 characters to the block and increment the block index
+	while(strcmp(content, "\0") != 0 && size+firstBlock > currentBlock){
+		strncpy(blockContent[currentBlock], content, 2000);
+
+		currentBlock++;
+	}
+}
+
+void read(char *fileName){
 
 }
 
