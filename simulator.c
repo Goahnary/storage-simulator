@@ -125,13 +125,12 @@ void write(char *fileName, char* content){
 	//while the string is not null, write 2000 characters to the block and increment the block index
 	while(strcmp(content, "\0") != 0 && size+firstBlock > currentBlock){
 		strncpy(blockContent[currentBlock], content, 2000);
-
 		currentBlock++;
 	}
 }
 
 void read(char *fileName){
-
+	
 }
 
 //Creates files
