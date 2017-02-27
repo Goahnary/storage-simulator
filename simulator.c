@@ -142,53 +142,59 @@ int isFreeSpace(int blocksNeeded){
 
 int main(int argc, char *argv[]){
 	
+	int quit = 0;
+	
 	while(!quit){
+		printf("\n");
 		printf("Hello! What would you like to do?\n");
-		printf("1) Create File\n");
-		printf("2) Open File\n");
-		printf("3) Close File\n");
-		printf("4) Read File\n");
-		printf("5) Write File\n");
+		printf("	1) Create File\n");
+		printf("	2) Open File\n");
+		printf("	3) Close File\n");
+		printf("	4) Read File\n");
+		printf("	5) Write File\n");
+		printf("	6) Quit\n");
 		
-		int choice = scanf("%d", &choice);
+		
+		int * choice;
+		scanf("%d", choice);
 		
 		
-		switch(choice){
+		switch(*choice){
+			
+			char * fname;
+
 			case 1:
 				printf("What is the name of your file?\n");
-				int fname = scanf("%s", &fname);
+				scanf("%s", fname);
 				printf("What is the size of the file?\n");
-				int fsize = scanf("%s", &fname);
-				create(fsize,fname);
+				int * fsize;
+				scanf("%d", fsize);
+				create(*fsize,fname);
 				break;
 			case 2:
                                 printf("What is the name of your file?\n");
-                                int fname = scanf("%s", &fname);
-                                printf("What is the size of the file?\n");
-                                int fsize = scanf("%s", &fname);
-                                create(fsize,fname);
+				scanf("%s", fname);
+                                //open(fname);
                                 break;
 			case 3:
                                 printf("What is the name of your file?\n");
-                                int fname = scanf("%s", &fname);
-                                printf("What is the size of the file?\n");
-                                int fsize = scanf("%s", &fname);
-                                create(fsize,fname);
+				scanf("%s", fname);
+                                //close(fname);
                                 break;
 			case 4:
                                 printf("What is the name of your file?\n");
-                                int fname = scanf("%s", &fname);
-                                printf("What is the size of the file?\n");
-                                int fsize = scanf("%s", &fname);
-                                create(fsize,fname);
+				scanf("%s", fname);
+                                //read(fname);
                                 break;
 			case 5:
                                 printf("What is the name of your file?\n");
-                                int fname = scanf("%s", &fname);
-                                printf("What is the size of the file?\n");
-                                int fsize = scanf("%s", &fname);
-                                create(fsize,fname);
+				scanf("%s", fname);
+                                //write(fname);
                                 break;
+			case 6:
+				quit = 1;
+				break;
 		}
 	}
 }
+
