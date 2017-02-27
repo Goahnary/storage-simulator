@@ -41,7 +41,7 @@ struct POFT {
 //defining a tuple to help keeping track of files in the OFT
 struct oftTuple {
 	char fname[255];
-	typedef struct FCB[];
+	struct FCB fcb;
 };
 
 
@@ -141,6 +141,54 @@ int isFreeSpace(int blocksNeeded){
 }
 
 int main(int argc, char *argv[]){
-
-	create(3,"file1");
+	
+	while(!quit){
+		printf("Hello! What would you like to do?\n");
+		printf("1) Create File\n");
+		printf("2) Open File\n");
+		printf("3) Close File\n");
+		printf("4) Read File\n");
+		printf("5) Write File\n");
+		
+		int choice = scanf("%d", &choice);
+		
+		
+		switch(choice){
+			case 1:
+				printf("What is the name of your file?\n");
+				int fname = scanf("%s", &fname);
+				printf("What is the size of the file?\n");
+				int fsize = scanf("%s", &fname);
+				create(fsize,fname);
+				break;
+			case 2:
+                                printf("What is the name of your file?\n");
+                                int fname = scanf("%s", &fname);
+                                printf("What is the size of the file?\n");
+                                int fsize = scanf("%s", &fname);
+                                create(fsize,fname);
+                                break;
+			case 3:
+                                printf("What is the name of your file?\n");
+                                int fname = scanf("%s", &fname);
+                                printf("What is the size of the file?\n");
+                                int fsize = scanf("%s", &fname);
+                                create(fsize,fname);
+                                break;
+			case 4:
+                                printf("What is the name of your file?\n");
+                                int fname = scanf("%s", &fname);
+                                printf("What is the size of the file?\n");
+                                int fsize = scanf("%s", &fname);
+                                create(fsize,fname);
+                                break;
+			case 5:
+                                printf("What is the name of your file?\n");
+                                int fname = scanf("%s", &fname);
+                                printf("What is the size of the file?\n");
+                                int fsize = scanf("%s", &fname);
+                                create(fsize,fname);
+                                break;
+		}
+	}
 }
