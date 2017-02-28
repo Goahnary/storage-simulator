@@ -64,7 +64,7 @@ struct OFT myOFT = {
 char blockContent[511][2000];
 
 //Opens files for reading
-void open(char *fileName){
+void open(char *fileName, struct OFT pOFT, int thread){
 	int i;
 
 	//seach the directory for the file
@@ -91,7 +91,7 @@ void open(char *fileName){
 }
 
 //Closes Files
-void close(char *fileName){
+void close(char *fileName, struct OFT pOFT, int thread){
 	int i;
 
 	//search all entries of myOFT
@@ -107,6 +107,19 @@ void close(char *fileName){
 	}
 
 	//per process
+	if(thread == 1){
+		//search all entries of the process OFT
+		for(i = 0; i < pOFT.entries; i++){
+
+			//if the file names match, remove from myOFT
+			if(strcmp(pOFT.blocks[i].fname, fileName) == 0){
+				struct oftTuple pt;
+				pOFT.blocks[i] = pt;
+				pOFT.entries--;
+				break;
+			}
+		}
+	}
 
 }
 
@@ -166,6 +179,7 @@ void read(char *fileName){
 		}
 
 		printf(content);
+		printf("\n");
 	}
 }
 
@@ -232,13 +246,73 @@ int isFreeSpace(int blocksNeeded){
 	
 }
 
+void *thread1(void* params){
+	struct OFT oft = {.entries = 0};
+
+	create(2, "file1");
+	open("file1", oft, 1);
+	write("file1", "This is a test of the write and read functions of the simulator.");
+
+	create(1, "file2");
+	open("file2", oft, 1);
+
+	close("file1", oft, 1);
+
+	write("file2", "A second test.");
+	close("file2", oft, 1);
+
+	pthread_exit(0);
+}
+
+void *thread2(void* params){
+	struct OFT oft = {.entries = 0};
+
+	open("file1", oft, 1);
+	open("file2", oft, 1);
+
+	read("file1");
+	read("file2");
+
+	pthread_exit(0);
+}
+
+void *thread3(void* params){
+	struct OFT oft = {.entries = 0};
+
+	pthread_exit(0);
+}
+
+//this method runs the simulation of the file system with several threads
+void simulate(){
+
+	pthread_attr_t attr; /* set of thread attributes */
+	pthread_t tid1; /* the thread identifier */
+	pthread_t tid2; /* the thread identifier */
+	pthread_t tid3; /* the thread identifier */
+
+	/* get default attribute */
+	pthread_attr_init(&attr);
+
+	/*create the intitial thread */
+	pthread_create(&tid1, &attr, thread1, NULL);
+	pthread_join(tid1, NULL);
+
+	//create the next two threads
+	pthread_create(&tid2, &attr, thread2, NULL);
+	pthread_create(&tid3, &attr, thread3, NULL);
+
+	pthread_join(tid2, NULL);
+	pthread_join(tid3, NULL);
+}
+
 int main(int argc, char *argv[]){
-	
+
 	int quit = 0;
 	
 	while(!quit){
 		printf("\n");
 		printf("Hello! What would you like to do?\n");
+		printf("	0) Run Simulation\n");
 		printf("	1) Create File\n");
 		printf("	2) Open File\n");
 		printf("	3) Close File\n");
@@ -246,13 +320,17 @@ int main(int argc, char *argv[]){
 		printf("	5) Write File\n");
 		printf("	6) Quit\n");
 		
-		
 		int choice;
 		scanf("%d", &choice);
 		
 		char fname;
+		struct OFT oft;
 
 		switch(choice){
+			case 0:
+				simulate();
+				break;
+
 			case 1:
 				printf("What is the name of your file?\n");
 				scanf("%s", &fname);
@@ -265,13 +343,13 @@ int main(int argc, char *argv[]){
 			case 2:
 				printf("What is the name of your file?\n");
 				scanf("%s", &fname);
-				open(&fname);
+				open(&fname, oft, 0);
 				break;
 
 			case 3:
 				printf("What is the name of your file?\n");
 				scanf("%s", &fname);
-				close(&fname);
+				close(&fname, oft, 0);
 				break;
 
 			case 4:
@@ -283,7 +361,7 @@ int main(int argc, char *argv[]){
 			case 5:
 				printf("What is the name of your file?\n");
 				scanf("%s", &fname);
-				printf("Write here: \n");
+				printf("Write here: ");
 				char content;
 				scanf("%s", &content);
 				write(&fname, &content);
