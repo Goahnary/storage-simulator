@@ -87,7 +87,6 @@ void open(char *fileName){
 	myOFT.blocks[myOFT.entries] = tuple;
 	myOFT.entries++;
 
-
 	//per process
 }
 
@@ -112,7 +111,7 @@ void close(char *fileName){
 }
 
 //Writes to files
-void write(char *fileName, char* content){
+void write(char *fileName, char *content){
 	int i;
 
 	//search myOFT to find index of filename
@@ -145,9 +144,12 @@ void write(char *fileName, char* content){
 char* read(char *fileName){
 	int i;
 
+	printf("%d", myOFT.entries);
+
 	//search myOFT to find index of filename
 	for(i = 0; i < myOFT.entries; i++){
 		if(strcmp(myOFT.blocks[i].fname, fileName) == 0){
+			printf("weofiwf");
 			break;
 		}
 	}
@@ -250,40 +252,47 @@ int main(int argc, char *argv[]){
 		int choice;
 		scanf("%d", &choice);
 		
+		char fname;
+
 		switch(choice){
-			
-			char fname;
-			
-			if(choice != 6){
+			case 1:	//create
 				printf("What is the name of your file?\n");
 				scanf("%s", &fname);
-			}
-
-			case 6:
-				quit = 1;
-				break;
-
-			case 1:
 				printf("What is the size of the file?\n");
 				int fsize;
 				scanf("%d", &fsize);
-				create(&fsize, *fname);
+				create(fsize, &fname);
 				break;
 
 			case 2:
-				//open(fname);
+				printf("What is the name of your file?\n");
+				scanf("%s", &fname);
+				open(&fname);
 				break;
 
 			case 3:
+				printf("What is the name of your file?\n");
+				scanf("%s", &fname);
 				//close(fname);
 				break;
 
 			case 4:
-				//read(fname);
+				printf("What is the name of your file?\n");
+				scanf("%s", &fname);
+				read(&fname);
 				break;
 			
 			case 5:
-				//write(fname);
+				printf("What is the name of your file?\n");
+				scanf("%s", &fname);
+				printf("Write here: \n");
+				// char content;
+				// scanf("%s", &content);
+				write(&fname, "this is a test");
+				break;
+
+			case 6:
+				quit = 1;
 				break;
 		}
 	}
