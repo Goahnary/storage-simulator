@@ -27,7 +27,7 @@ struct FCB {
 
 //defining a tuple to help keeping track of files in the OFT
 struct oftTuple {
-	char fname[255];
+	char *fname;
 	struct FCB fcb;
 };
 
@@ -86,6 +86,9 @@ void open(char *fileName){
 
 	myOFT.blocks[myOFT.entries] = tuple;
 	myOFT.entries++;
+
+
+	//per process
 }
 
 //Closes Files
@@ -104,6 +107,7 @@ void close(char *fileName){
 		}
 	}
 
+	//per process
 
 }
 
@@ -126,16 +130,48 @@ void write(char *fileName, char* content){
 	while(strcmp(content, "\0") != 0 && size+firstBlock > currentBlock){
 		strncpy(blockContent[currentBlock], content, 2000);
 		currentBlock++;
+
+		//if length of content < 2000, all content is written
+		if(strlen(content) < 2000){
+			break;
+		} else {
+			//remove first 2000 chars from content
+			char *temp = strdup(content + 2000);
+			content = temp;
+		}
 	}
 }
 
-void read(char *fileName){
-	
+char* read(char *fileName){
+	int i;
+
+	//search myOFT to find index of filename
+	for(i = 0; i < myOFT.entries; i++){
+		if(strcmp(myOFT.blocks[i].fname, fileName) == 0){
+			break;
+		}
+	}
+
+	if(i == myOFT.entries){
+		return "\0";
+	}
+
+	else{
+		char *content = "";
+		int j;
+
+		for(j = myOFT.blocks[i].fcb.firstBlock; j < myOFT.blocks[i].fcb.size; j++){
+			content = strcat(content, blockContent[j]);
+		}
+
+		return content;
+	}
+
 }
 
 //Creates files
 void create(int size, char *name){
-	int free = 0;
+	int free = 0;	//the number of free blocks found in a row
 	int startIndex = -1;
 	int created = 0;
 	int i;
@@ -211,44 +247,43 @@ int main(int argc, char *argv[]){
 		printf("	6) Quit\n");
 		
 		
-		int * choice;
-		scanf("%d", choice);
+		int choice;
+		scanf("%d", &choice);
 		
-		
-		switch(*choice){
+		switch(choice){
 			
-			char * fname;
-
-			case 1:
+			char fname;
+			
+			if(choice != 6){
 				printf("What is the name of your file?\n");
-				scanf("%s", fname);
-				printf("What is the size of the file?\n");
-				int * fsize;
-				scanf("%d", fsize);
-				create(*fsize,fname);
-				break;
-			case 2:
-                                printf("What is the name of your file?\n");
-				scanf("%s", fname);
-                                //open(fname);
-                                break;
-			case 3:
-                                printf("What is the name of your file?\n");
-				scanf("%s", fname);
-                                //close(fname);
-                                break;
-			case 4:
-                                printf("What is the name of your file?\n");
-				scanf("%s", fname);
-                                //read(fname);
-                                break;
-			case 5:
-                                printf("What is the name of your file?\n");
-				scanf("%s", fname);
-                                //write(fname);
-                                break;
+				scanf("%s", &fname);
+			}
+
 			case 6:
 				quit = 1;
+				break;
+
+			case 1:
+				printf("What is the size of the file?\n");
+				int fsize;
+				scanf("%d", &fsize);
+				create(&fsize, *fname);
+				break;
+
+			case 2:
+				//open(fname);
+				break;
+
+			case 3:
+				//close(fname);
+				break;
+
+			case 4:
+				//read(fname);
+				break;
+			
+			case 5:
+				//write(fname);
 				break;
 		}
 	}
