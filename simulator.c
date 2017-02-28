@@ -45,7 +45,7 @@ struct POFT {
 
 //Creating the volume conrol block for our file system(FS)
 struct VCB myVCB = {
-	.sizeOfBlock = 2048,
+	.sizeOfBlock = 548,
 	.freeBlocks = 511,
 	.numberOfBlocks = 511,
 	.bitmap = {0}
@@ -141,34 +141,32 @@ void write(char *fileName, char *content){
 	}
 }
 
-char* read(char *fileName){
+void read(char *fileName){
 	int i;
-
-	printf("%d", myOFT.entries);
 
 	//search myOFT to find index of filename
 	for(i = 0; i < myOFT.entries; i++){
 		if(strcmp(myOFT.blocks[i].fname, fileName) == 0){
-			printf("weofiwf");
 			break;
 		}
 	}
 
 	if(i == myOFT.entries){
-		return "\0";
+		printf("\0");
 	}
 
 	else{
-		char *content = "";
+		char content[2000*myOFT.blocks[i].fcb.size];
+		memset(content, 0, 2000*myOFT.blocks[i].fcb.size);
+		
 		int j;
 
 		for(j = myOFT.blocks[i].fcb.firstBlock; j < myOFT.blocks[i].fcb.size; j++){
-			content = strcat(content, blockContent[j]);
+			strcat(content, blockContent[j]);
 		}
 
-		return content;
+		printf(content);
 	}
-
 }
 
 //Creates files
@@ -255,7 +253,7 @@ int main(int argc, char *argv[]){
 		char fname;
 
 		switch(choice){
-			case 1:	//create
+			case 1:
 				printf("What is the name of your file?\n");
 				scanf("%s", &fname);
 				printf("What is the size of the file?\n");
@@ -273,7 +271,7 @@ int main(int argc, char *argv[]){
 			case 3:
 				printf("What is the name of your file?\n");
 				scanf("%s", &fname);
-				//close(fname);
+				close(&fname);
 				break;
 
 			case 4:
@@ -286,9 +284,9 @@ int main(int argc, char *argv[]){
 				printf("What is the name of your file?\n");
 				scanf("%s", &fname);
 				printf("Write here: \n");
-				// char content;
-				// scanf("%s", &content);
-				write(&fname, "this is a test");
+				char content;
+				scanf("%s", &content);
+				write(&fname, &content);
 				break;
 
 			case 6:
