@@ -43,7 +43,7 @@ struct POFT {
 	int handles[511];
 };
 
-//Creating the volume conrol block for our file system(FS)
+//Creating the volume control block for our file system(FS)
 struct VCB myVCB = {
 	.sizeOfBlock = 548,
 	.freeBlocks = 511,
@@ -61,6 +61,7 @@ struct OFT myOFT = {
 	.entries = 0
 };
 
+//the actual content of the "disk"
 char blockContent[511][2000];
 
 //Opens files for reading
@@ -69,42 +70,46 @@ void open(char *fileName, struct OFT pOFT, int thread){
 
 	//seach the directory for the file
 	for(i = 0; i < myDirectory.entries; i++){
+
+		//if this is the file, break
 		if(strcmp(myDirectory.names[i], fileName) == 0){
 			break;
 		}
 	}
 
+	if(i == myOFT.entries){
+		printf("This file was not found...\n");
+		return;
+	}
+
+	//creat an fcb for the file
 	struct FCB newFCB = {
 		.size = myDirectory.sizes[i],
 		.firstBlock = myDirectory.startBlocks[i]
 	};
 
+	//create a tuple of the name and fcb
 	struct oftTuple tuple = {
 		.fcb = newFCB,
 		.fname = fileName
 	};
 
+	//add to the oft
 	myOFT.blocks[myOFT.entries] = tuple;
 	myOFT.entries++;
 
 	//per process
+	if(thread == 1){
+		//do the same for the pre process oft
+		pOFT.blocks[pOFT.entries] = tuple;
+		pOFT.entries++;
+	}
 }
 
 //Closes Files
 void close(char *fileName, struct OFT pOFT, int thread){
+
 	int i;
-
-	//search all entries of myOFT
-	for(i = 0; i < myOFT.entries; i++){
-
-		//if the file names match, remove from myOFT
-		if(strcmp(myOFT.blocks[i].fname, fileName) == 0){
-			struct oftTuple t;
-			myOFT.blocks[i] = t;
-			myOFT.entries--;
-			break;
-		}
-	}
 
 	//per process
 	if(thread == 1){
@@ -119,8 +124,25 @@ void close(char *fileName, struct OFT pOFT, int thread){
 				break;
 			}
 		}
+
+		//if the file is not open in this process
+		if(i == pOFT.entries){
+			printf("This file is not open in this process...\n");
+			return;
+		}
 	}
 
+	//search all entries of myOFT
+	for(i = 0; i < myOFT.entries; i++){
+
+		//if the file names match, remove from myOFT
+		if(strcmp(myOFT.blocks[i].fname, fileName) == 0){
+			struct oftTuple t;
+			myOFT.blocks[i] = t;
+			myOFT.entries--;
+			break;
+		}
+	}
 }
 
 //Writes to files
@@ -132,6 +154,12 @@ void write(char *fileName, char *content){
 		if(strcmp(myOFT.blocks[i].fname, fileName) == 0){
 			break;
 		}
+	}
+
+	//if no file found, print error message
+	if(i == myOFT.entries){
+		printf("This file was not found...\n");
+		return;
 	}
 
 	int size = myOFT.blocks[i].fcb.size;
@@ -154,33 +182,39 @@ void write(char *fileName, char *content){
 	}
 }
 
+//reads and prints the contents of a file
 void read(char *fileName){
 	int i;
 
 	//search myOFT to find index of filename
 	for(i = 0; i < myOFT.entries; i++){
+
+		//break if file found
 		if(strcmp(myOFT.blocks[i].fname, fileName) == 0){
 			break;
 		}
 	}
 
+	//if no file found, print error message
 	if(i == myOFT.entries){
-		printf("\0");
+		printf("This file was not found...\n");
+		return;
 	}
 
-	else{
-		char content[2000*myOFT.blocks[i].fcb.size];
-		memset(content, 0, 2000*myOFT.blocks[i].fcb.size);
-		
-		int j;
+	//create a content variable and allocate the memory
+	char content[2000*myOFT.blocks[i].fcb.size];
+	memset(content, 0, 2000*myOFT.blocks[i].fcb.size);
+	
+	int j;
 
-		for(j = myOFT.blocks[i].fcb.firstBlock; j < myOFT.blocks[i].fcb.size; j++){
-			strcat(content, blockContent[j]);
-		}
-
-		printf(content);
-		printf("\n");
+	//for every block of the file, concatenate to the content
+	for(j = myOFT.blocks[i].fcb.firstBlock; j < myOFT.blocks[i].fcb.size; j++){
+		strcat(content, blockContent[j]);
 	}
+
+	//print the content
+	printf(content);
+	printf("\n");
 }
 
 //Creates files
@@ -196,6 +230,7 @@ void create(int size, char *name){
 		if(myVCB.bitmap[i] == 0){
 			//start counting free blocks
 
+			//set start index if no index yet
 			if(startIndex == -1){
 				startIndex = i;
 			}
@@ -211,6 +246,7 @@ void create(int size, char *name){
 					myVCB.bitmap[j] = 1;
 				}
 
+				//update the directory with the new file information
 				myDirectory.names[myDirectory.entries] = name;
 				myDirectory.startBlocks[myDirectory.entries] = startIndex;
 				myDirectory.sizes[myDirectory.entries] = size;
@@ -220,16 +256,18 @@ void create(int size, char *name){
 			}
 		}
 		
+		//the count must start over (contiguous allocation)
 		else {
 			startIndex = -1;
 			free = 0;
 		}
 	}
 
+	//give feedback to user
 	if(created == 1){
-		printf("%s", "File Created!\n");
+		printf("File Created!\n");
 	} else {
-		printf("%s", "There is not enough free space to create this file.");
+		printf("There is not enough free space to create this file.\n");
 	}
 }
 
@@ -250,6 +288,7 @@ int isFreeSpace(int blocksNeeded){
 	
 }
 
+//the method for thread 1
 void *thread1(void* params){
 	struct OFT oft = {.entries = 0};
 
@@ -268,6 +307,7 @@ void *thread1(void* params){
 	pthread_exit(0);
 }
 
+//the method for thread 2
 void *thread2(void* params){
 	struct OFT oft = {.entries = 0};
 
@@ -280,6 +320,7 @@ void *thread2(void* params){
 	pthread_exit(0);
 }
 
+//the method for thread 3
 void *thread3(void* params){
 	struct OFT oft = {.entries = 0};
 
@@ -290,9 +331,9 @@ void *thread3(void* params){
 void simulate(){
 
 	pthread_attr_t attr; /* set of thread attributes */
-	pthread_t tid1; /* the thread identifier */
-	pthread_t tid2; /* the thread identifier */
-	pthread_t tid3; /* the thread identifier */
+	pthread_t tid1; /* the thread 1 identifier */
+	pthread_t tid2; /* the thread 2 identifier */
+	pthread_t tid3; /* the thread 3 identifier */
 
 	/* get default attribute */
 	pthread_attr_init(&attr);
