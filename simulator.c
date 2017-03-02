@@ -189,12 +189,17 @@ void create(int size, char *name){
 	int startIndex = -1;
 	int created = 0;
 	int i;
+	
 	//check every block
-	for(i = 0; i < sizeof(myVCB.bitmap) / sizeof(myVCB.bitmap[0]); i++){
+	for(i = 0; i < myVCB.numberOfBlocks - 1; i++){
 		//if this block is free
 		if(myVCB.bitmap[i] == 0){
 			//start counting free blocks
-			startIndex = i;
+
+			if(startIndex == -1){
+				startIndex = i;
+			}
+			
 			free++;
 
 			//if this set of free blocks is big enough
@@ -212,7 +217,6 @@ void create(int size, char *name){
 				myDirectory.entries++;
 			
 				created = 1;
-				free -= size;
 			}
 		}
 		
