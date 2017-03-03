@@ -61,6 +61,7 @@ struct OFT myOFT = {
 	.entries = 0
 };
 
+//this is the actual content of the files
 char blockContent[511][2000];
 
 //Opens files for reading
@@ -74,11 +75,13 @@ void open(char *fileName, struct OFT pOFT, int thread){
 		}
 	}
 
+	//create an fcb 
 	struct FCB newFCB = {
 		.size = myDirectory.sizes[i],
 		.firstBlock = myDirectory.startBlocks[i]
 	};
 
+	//create a tuple for the oft
 	struct oftTuple tuple = {
 		.fcb = newFCB,
 		.fname = fileName
@@ -175,20 +178,24 @@ void read(char *fileName){
 		}
 	}
 
+	//don't read if file not found
 	if(i == myOFT.entries){
 		return;
 	}
 
 	else{
+		//create char array and allocate memory needed
 		char content[2000*myOFT.blocks[i].fcb.size];
 		memset(content, 0, 2000*myOFT.blocks[i].fcb.size);
 		
 		int j;
 
+		//concatenate each bloack to the string
 		for(j = myOFT.blocks[i].fcb.firstBlock; j < myOFT.blocks[i].fcb.size; j++){
 			strcat(content, blockContent[j]);
 		}
 
+		//print
 		printf(content);
 		printf("\n");
 	}
@@ -217,6 +224,7 @@ void create(int size, char *name){
 					myVCB.bitmap[j] = 1;
 				}
 
+				//updated directory
 				myDirectory.names[myDirectory.entries] = name;
 				myDirectory.startBlocks[myDirectory.entries] = startIndex;
 				myDirectory.sizes[myDirectory.entries] = size;
@@ -240,38 +248,41 @@ void create(int size, char *name){
 	}
 }
 
+//the thread 1 function
 void *thread1(void* params){
  	struct OFT oft = {.entries = 0};
  
  	create(2, "file1");
  	open("file1", oft, 1);
  	write("file1", "This is a test of the write and read functions of the simulator.");
- 
+	 close("file1", oft, 1);
+
  	create(1, "file2");
  	open("file2", oft, 1);
- 
- 	close("file1", oft, 1);
- 
  	write("file2", "A second test.");
  	close("file2", oft, 1);
  
  	pthread_exit(0);
  }
  
+ //the thread 2 function
  void *thread2(void* params){
  	struct OFT oft = {.entries = 0};
  
  	open("file1", oft, 1);
- 	open("file2", oft, 1);
- 
  	read("file1");
- 	read("file2");
+ 	close("file1", oft, 1);
  
  	pthread_exit(0);
  }
  
+ //the thread 3 function
  void *thread3(void* params){
  	struct OFT oft = {.entries = 0};
+
+ 	open("file2", oft, 1);
+ 	read("file2");
+ 	close("file2", oft, 1);
  
  	pthread_exit(0);
  }
@@ -300,71 +311,5 @@ void *thread1(void* params){
  }
 
 int main(int argc, char *argv[]){
-	
-	int quit = 0;
-	
-	while(!quit){
-		printf("\n");
-		printf("Hello! What would you like to do?\n");
-		printf("	0) Simulation\n");
-		printf("	1) Create File\n");
-		printf("	2) Open File\n");
-		printf("	3) Close File\n");
-		printf("	4) Read File\n");
-		printf("	5) Write File\n");
-		printf("	6) Quit\n");
-		
-		
-		int choice;
-		scanf("%d", &choice);
-		
-		char fname;
-		struct OFT oft;
-
-		switch(choice){
-			case 0: 
-				simulate();
-				break;
-
-			case 1:
-				printf("What is the name of your file?\n");
-				scanf("%s", &fname);
-				printf("What is the size of the file?\n");
-				int fsize;
-				scanf("%d", &fsize);
-				create(fsize, &fname);
-				break;
-
-			case 2:
-				printf("What is the name of your file?\n");
-				scanf("%s", &fname);
-				open(&fname, oft, 0);
-				break;
-
-			case 3:
-				printf("What is the name of your file?\n");
-				scanf("%s", &fname);
-				close(&fname, oft, 0);
-				break;
-
-			case 4:
-				printf("What is the name of your file?\n");
-				scanf("%s", &fname);
-				read(&fname);
-				break;
-			
-			case 5:
-				printf("What is the name of your file?\n");
-				scanf("%s", &fname);
-				printf("Write here: \n");
-				char content;
-				scanf("%s", &content);
-				write(&fname, &content);
-				break;
-
-			case 6:
-				quit = 1;
-				break;
-		}
-	}
+	simulate();
 }
